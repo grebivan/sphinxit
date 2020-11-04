@@ -3,9 +3,12 @@
 /docs/_build
 /.idea
 /.ropeproject
+/venv
 *.egg-info
 *.egg
 *.pyc
 *.swp
 .DS_Store
 .noseids
+/.tox
+.python-version

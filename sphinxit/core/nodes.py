@@ -30,6 +30,11 @@ from sphinxit.core.helpers import (
 )
 from sphinxit.core.exceptions import SphinxQLSyntaxException
 from sphinxit.core.mixins import ConfigMixin
+import six
+
+
+if six.PY3:
+    from functools import reduce
 
 
 class SelectFromContainer(ConfigMixin):
@@ -506,11 +511,18 @@ class SnippetsOptionsContainer(ConfigMixin):
     def __bool__(self):
         return bool(self.options)
 
-    def set_options(self, **kwargs):
-        for option, params in kwargs.items():
+    def _set_options(self, options):
+        for option, params in options.items():
             with SnippetsOptionsCtx(option, params).with_config(self.config) as lex:
                 if lex and lex not in self.options:
                     self.options.append(lex)
+
+    def set_options(self, **kwargs):
+        # For py27 & py35 dict order compatibility
+        if 'ordered' in kwargs:
+            self._set_options(kwargs.pop('ordered'))
+            
+        self._set_options(kwargs)
 
     def lex(self):
         if self:

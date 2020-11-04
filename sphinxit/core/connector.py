@@ -47,6 +47,13 @@ class SphinxConnector(ConfigMixin):
                 self.mysqldb = True
             except ImportError:
                 pass
+        elif sql_engine == 'pymysql':
+            try:
+                import pymysql
+                self.sql_client = pymysql
+                self.mysqldb = True
+            except ImportError:
+                pass
 
         self.__connections_pool = deque([])
         self.__local = threading.local()

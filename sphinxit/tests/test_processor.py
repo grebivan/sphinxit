@@ -1,6 +1,8 @@
 # coding=utf-8
 from __future__ import unicode_literals
+from collections import OrderedDict
 import datetime
+import sys
 
 try:
     import unittest2 as unittest
@@ -60,7 +62,7 @@ class TestSearch(unittest.TestCase):
     def test_with_or_filters_and_fields(self):
         correct_qls = [
             "SELECT id, (id>=100 OR id=1) AS cnd FROM company WHERE MATCH('Yandex') AND cnd>0",
-            "SELECT id, (id=1 OR id>=0) AS cnd FROM company WHERE MATCH('Yandex') AND cnd>0",
+            "SELECT id, (id=1 OR id>=100) AS cnd FROM company WHERE MATCH('Yandex') AND cnd>0",
         ]
         search = Search(['company'], config=SearchConfig).select('id')
         search = search.match('Yandex').filter(OR(id__gte=100, id__eq=1))
@@ -195,11 +197,25 @@ class TestSnippets(unittest.TestCase):
         )
 
     def test_with_options(self):
+
+        if sys.version_info[:2] <= (3, 5):
+            options = dict(
+                ordered=OrderedDict((
+                    ('before_match', '<strong>'),
+                    ('after_match', '</strong>')
+                ))
+            )
+        else:
+            options = dict(
+                before_match='<strong>',
+                after_match='</strong>',
+            )
+
         snippets = (
             Snippet(index='company', config=SearchConfig)
             .for_query("Me amore")
             .from_data("amore mia")
-            .options(before_match='<strong>', after_match='</strong>')
+            .options(**options)
         )
         self.assertEqual(
             snippets.lex(), (
